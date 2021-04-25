@@ -58,7 +58,7 @@ public final class DocstringUtils {
    * """
    * }</pre>
    *
-   * @param docstring a docstring of the format described above
+   * @param doc a docstring of the format described above
    * @param parseErrors a list to which parsing error messages are written
    * @return the parsed docstring information
    */
@@ -67,6 +67,63 @@ public final class DocstringUtils {
     DocstringInfo result = parser.parse();
     parseErrors.addAll(parser.errors);
     return result;
+  }
+
+  /**
+   * Removes leading whitespace from docstring lines after the first.
+   *
+   * Allows docstrings to be indented to the context where they appear, without including that indent in the output.
+   * Some output formats have semantic meaning for leading whitespace (such as Markdown).
+   *
+   * @param doc A non-function docstring, without Args or Returns sections.
+   * 
+   */
+  public static String dedentDocstring(String doc) {
+    // Two iterations: first buffer lines and find the minimal indent, then trim to the min
+    List<String> buffer = new ArrayList<>();
+    int indentation = Integer.MAX_VALUE;
+    int lineOffset = 0;
+
+    do {
+      int endOfLineOffset = doc.indexOf("\n", lineOffset);
+      if (endOfLineOffset < 0) {
+        buffer.add(doc.substring(lineOffset));
+        break;
+      }
+      String line = doc.substring(lineOffset, endOfLineOffset);
+      boolean empty = line.isEmpty();
+      boolean isFirstLine = lineOffset == 0;
+      if (!empty) {
+        int lineIndent = DocstringParser.getIndentation(line);
+        if (isFirstLine && lineIndent == 0) {
+          // Doesn't count. First line is often not indented, e.g.
+          // doc = """First line
+          //       second line"""
+          // should still result in both lines with no leading whitespace
+        } else {
+          indentation = Math.min(indentation, lineIndent);
+        }
+      }
+      buffer.add(line);
+      // next line
+      lineOffset = endOfLineOffset + 1;
+    } while (true);
+
+    boolean firstLine = true;
+    StringBuilder description = new StringBuilder();
+    for (String bufLine : buffer) {
+      if (firstLine) {
+        description.append(bufLine);
+        firstLine = false;
+      } else {
+        description.append("\n");
+        if (!bufLine.isEmpty()) {
+          String trimmedLine = bufLine.substring(indentation);
+          description.append(trimmedLine);
+        }
+      }
+    }
+    return description.toString();
   }
 
   /** Encapsulates information about a Starlark function docstring. */
