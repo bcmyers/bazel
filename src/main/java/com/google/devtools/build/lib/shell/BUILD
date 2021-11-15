@@ -29,15 +29,15 @@ java_library(
 # Bootstrapping SingleJar using Starlark rules
 #
 
-bootstrap_java_library(
-    name = "shell-starlark",
-    srcs = glob(
-        ["*.java"],
-        exclude = ["ExecutionStatistics.java"],
-    ),
-    jars = [
-        "//third_party:auto_value-jars",
-        "//third_party:flogger-jars",
-        "//third_party:bootstrap_guava_and_error_prone-jars",
-    ],
-)
+# bootstrap_java_library(
+#     name = "shell-starlark",
+#     srcs = glob(
+#         ["*.java"],
+#         exclude = ["ExecutionStatistics.java"],
+#     ),
+#     jars = [
+#         "//third_party:auto_value-jars",
+#         "//third_party:flogger-jars",
+#         "//third_party:bootstrap_guava_and_error_prone-jars",
+#     ],
+# )
